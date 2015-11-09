@@ -31,33 +31,58 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Threading;
+using DW.WPFToolkit.Controls.Numbers;
 
 namespace DW.WPFToolkit.Controls
 {
     /// <summary>
-    /// Enhances the <see cref="System.Windows.Controls.TextBox" /> to accept numeric values only, so the text can be bound to a numeric property direclty without converting.
+    /// Displays a <see cref="System.Windows.Controls.TextBox" /> to accept numeric values only, so the text can be bound to a numeric property direclty without converting.
     /// </summary>
     /// <example>
     /// <code lang="XAML">
     /// <![CDATA[
-    /// <WPFToolkit:NumberBox NumberType="Integer"
-    ///                       HasUpDownButtons="True"
-    ///                       HasResetButton="True"
-    ///                       DefaultValue="0"
-    ///                       DisabledOnUncheck="True"
-    ///                       IsCheckable="True"
-    ///                       IsChecked="{Binding ValueIsChecked}"
-    ///                       Minimum="0"
-    ///                       Maximum="100"
-    ///                       Text="{Binding Value}" />
+    /// <!-- Many properties are set only for display the possibilities -->
+    /// <Toolkit:NumberBox NumberType="Double"
+    ///                    
+    ///                    Number="{Binding MyDoubleValue}"
+    ///                    Minimum="-12.5"
+    ///                    Maximum="55.5"
+    ///                    DefaultNumber="5"
+    ///                    
+    ///                    ShowCurrency="True"
+    ///                    Currency="€"
+    ///                    CurrencyPosition="Right"
+    ///                    
+    ///                    HasCheckBox="True"
+    ///                    CheckBoxBehavior="EnableIfChecked"
+    ///                    IsChecked="{Binding MyDoubleValueIsChecked}"
+    ///                    CheckBoxPosition="Left"
+    ///                    
+    ///                    UpDownBehavior="ArrowsAndButtons"
+    ///                    Step="0.5"
+    ///                    UpDownButtonsPosition="Right"
+    ///                    
+    ///                    NumberSelectionBehavior="OnFocusAndUpDown"
+    ///                    
+    ///                    LostFocusBehavior="{Toolkit:LostFocusBehavior PlaceDefaultNumber, TrimLeadingZero=True, FormatText={}{0:D2}}"
+    ///                    
+    ///                    PredefinesCulture="en-US" />
     /// ]]>
     /// </code>
     /// </example>
     [TemplatePart(Name = "PART_UpButton", Type = typeof(RepeatButton))]
     [TemplatePart(Name = "PART_DownButton", Type = typeof(RepeatButton))]
     [TemplatePart(Name = "PART_ResetButton", Type = typeof(Button))]
-    public class NumberBox : TextBox
+    public class NumberBox : Control
     {
+        private bool _selfChange;
+        private INumber _number;
+        private TextBox _textBox;
+        private RepeatButton _upButton;
+        private RepeatButton _downButton;
+        private Button _resetButton;
+
         static NumberBox()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(NumberBox), new FrameworkPropertyMetadata(typeof(NumberBox)));
@@ -68,107 +93,18 @@ namespace DW.WPFToolkit.Controls
         /// </summary>
         public NumberBox()
         {
-            CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, null, CanPasteCommand));
-
-            MouseWheel += OnMouseWheel;
+            _number = NumberFactory.Create(NumberType);
         }
 
-        private void OnMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if (!HasUpDownButtons)
-                return;
-
-            if (e.Delta > 0)
-                HandleUpButtonClick(sender, e);
-            else
-                HandleDownButtonClick(sender, e);
-        }
-
+        #region NumberType
         /// <summary>
-        /// The template gets added to the control.
+        /// Gets or sets the type of number to be supported in the NumberBox.
         /// </summary>
-        public override void OnApplyTemplate()
+        /// <remarks>Default value is <see cref="DW.WPFToolkit.Controls.NumberType.Int" />.</remarks>
+        [DefaultValue(NumberType.Int)]
+        public NumberType NumberType
         {
-            base.OnApplyTemplate();
-
-            var upButton = GetTemplateChild("PART_UpButton") as RepeatButton;
-            var downButton = GetTemplateChild("PART_DownButton") as RepeatButton;
-            var resetButton = GetTemplateChild("PART_ResetButton") as Button;
-
-            if (upButton != null)
-                upButton.Click += HandleUpButtonClick;
-            if (downButton != null)
-                downButton.Click += HandleDownButtonClick;
-            if (resetButton != null)
-                resetButton.Click += HandleResetButtonClick;
-        }
-
-        private void HandleUpButtonClick(object sender, RoutedEventArgs e)
-        {
-            double value;
-            if (double.TryParse(Text, out value))
-                value += Step;
-            else
-                value = GetMinimum();
-
-            if (value <= GetMaximum())
-                Text = value.ToString(CultureInfo.CurrentUICulture);
-        }
-
-        private void HandleDownButtonClick(object sender, RoutedEventArgs e)
-        {
-            double value;
-            if (double.TryParse(Text, out value))
-                value -= Step;
-            else
-                value = GetMaximum();
-
-            if (value >= GetMinimum())
-                Text = value.ToString(CultureInfo.CurrentUICulture);
-        }
-
-        private void HandleResetButtonClick(object sender, RoutedEventArgs routedEventArgs)
-        {
-            Text = DefaultValue != null ? DefaultValue.ToString() : null;
-        }
-
-        /// <summary>
-        /// Gets or sets the minimum value allowed in the text box.
-        /// </summary>
-        public object Minimum
-        {
-            get { return GetValue(MinimumProperty); }
-            set { SetValue(MinimumProperty, value); }
-        }
-
-        /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Minimum" /> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty MinimumProperty =
-            DependencyProperty.Register("Minimum", typeof(object), typeof(NumberBox));
-
-        /// <summary>
-        /// Gets or sets the maximum value allowed in the text box.
-        /// </summary>
-        public object Maximum
-        {
-            get { return GetValue(MaximumProperty); }
-            set { SetValue(MaximumProperty, value); }
-        }
-
-        /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Maximum" /> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty MaximumProperty =
-            DependencyProperty.Register("Maximum", typeof(object), typeof(NumberBox));
-
-        /// <summary>
-        /// Gets or sets a value that indicated which type of numbers are allowed to type in.
-        /// </summary>
-        [DefaultValue(NumberTypes.Integer)]
-        public NumberTypes NumberType
-        {
-            get { return (NumberTypes)GetValue(NumberTypeProperty); }
+            get { return (NumberType)GetValue(NumberTypeProperty); }
             set { SetValue(NumberTypeProperty, value); }
         }
 
@@ -176,15 +112,230 @@ namespace DW.WPFToolkit.Controls
         /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.NumberType" /> dependency property.
         /// </summary>
         public static readonly DependencyProperty NumberTypeProperty =
-            DependencyProperty.Register("NumberType", typeof(NumberTypes), typeof(NumberBox), new UIPropertyMetadata(NumberTypes.Integer));
+            DependencyProperty.Register("NumberType", typeof(NumberType), typeof(NumberBox), new PropertyMetadata(NumberType.Int, OnNumberTypeChanged));
+
+        private static void OnNumberTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (NumberBox)d;
+            control.OnNumberTypeChanged(e);
+        }
+        #endregion NumberType
+
+        #region Number
+        /// <summary>
+        /// Gets or sets the number value. It can be any of the <see cref="DW.WPFToolkit.Controls.NumberType" />.
+        /// </summary>
+        public object Number
+        {
+            get { return (object)GetValue(NumberProperty); }
+            set { SetValue(NumberProperty, value); }
+        }
 
         /// <summary>
-        /// Gets or sets the step width to be used by the up or down buttons.
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Number" /> dependency property.
         /// </summary>
-        [DefaultValue(1.0)]
-        public double Step
+        public static readonly DependencyProperty NumberProperty =
+            DependencyProperty.Register("Number", typeof(object), typeof(NumberBox), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnNumberChanged));
+
+        private static void OnNumberChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get { return (double)GetValue(StepProperty); }
+            var control = (NumberBox)d;
+            control.OnNumberChanged(e);
+        }
+        #endregion Number
+
+        #region Minimum
+        /// <summary>
+        /// Gets or sets the minimum value to be written into the NumberBox.
+        /// </summary>
+        public object Minimum
+        {
+            get { return (object)GetValue(MinimumProperty); }
+            set { SetValue(MinimumProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Minimum" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty MinimumProperty =
+            DependencyProperty.Register("Minimum", typeof(object), typeof(NumberBox), new PropertyMetadata(OnMinimumChanged));
+
+        private static void OnMinimumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (NumberBox)d;
+            control.OnMinimumChanged(e);
+        }
+        #endregion Minimum
+
+        #region Maximum
+        /// <summary>
+        /// Gets or sets the maximum value to be written into the NumberBox.
+        /// </summary>
+        public object Maximum
+        {
+            get { return (object)GetValue(MaximumProperty); }
+            set { SetValue(MaximumProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Maximum" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty MaximumProperty =
+            DependencyProperty.Register("Maximum", typeof(object), typeof(NumberBox), new PropertyMetadata(OnMaximumChanged));
+
+        private static void OnMaximumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (NumberBox)d;
+            control.OnMaximumChanged(e);
+        }
+        #endregion Maximum
+
+        #region Currency
+        /// <summary>
+        /// Gets or sets the value which indicates if the NumberBox shows a currency symbol.
+        /// </summary>
+        /// <remarks>Default value is false.</remarks>
+        [DefaultValue(false)]
+        public bool ShowCurrency
+        {
+            get { return (bool)GetValue(ShowCurrencyProperty); }
+            set { SetValue(ShowCurrencyProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.ShowCurrency" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty ShowCurrencyProperty =
+            DependencyProperty.Register("ShowCurrency", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
+
+        /// <summary>
+        /// Gets or sets the currency symbol. Its visible when setting <see cref="DW.WPFToolkit.Controls.NumberBox.ShowCurrency" /> to true.
+        /// </summary>
+        /// <remarks>Default value is €.</remarks>
+        [DefaultValue("€")]
+        public object Currency
+        {
+            get { return (object)GetValue(CurrencyProperty); }
+            set { SetValue(CurrencyProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Currency" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CurrencyProperty =
+            DependencyProperty.Register("Currency", typeof(object), typeof(NumberBox), new PropertyMetadata("€"));
+
+        /// <summary>
+        /// Gets or sets the position of the currency symbol within the NumberBox.
+        /// </summary>
+        /// <remarks>Default value is Dock.Right.</remarks>
+        [DefaultValue(Dock.Right)]
+        public Dock CurrencyPosition
+        {
+            get { return (Dock)GetValue(CurrencyPositionProperty); }
+            set { SetValue(CurrencyPositionProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.CurrencyPosition" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CurrencyPositionProperty =
+            DependencyProperty.Register("CurrencyPosition", typeof(Dock), typeof(NumberBox), new PropertyMetadata(Dock.Right));
+        #endregion Currency
+
+        #region CheckBox
+        /// <summary>
+        /// Gets or sets the value which indicates if a checkbox is shown in the NumberBox.
+        /// </summary>
+        /// <remarks>Default value is false</remarks>
+        [DefaultValue(false)]
+        public bool HasCheckBox
+        {
+            get { return (bool)GetValue(HasCheckBoxProperty); }
+            set { SetValue(HasCheckBoxProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.HasCheckBox" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty HasCheckBoxProperty =
+            DependencyProperty.Register("HasCheckBox", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
+
+        /// <summary>
+        /// Gets or sets the value which indicates of the checkbox is checked.
+        /// </summary>
+        public bool IsChecked
+        {
+            get { return (bool)GetValue(IsCheckedProperty); }
+            set { SetValue(IsCheckedProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.IsChecked" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsCheckedProperty =
+            DependencyProperty.Register("IsChecked", typeof(bool), typeof(NumberBox), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        /// <summary>
+        /// Gets or sets the behavior of the checkbox.
+        /// </summary>
+        /// <remarks>Default value is NumberBoxCheckBoxBehavior.None</remarks>
+        [DefaultValue(NumberBoxCheckBoxBehavior.None)]
+        public NumberBoxCheckBoxBehavior CheckBoxBehavior
+        {
+            get { return (NumberBoxCheckBoxBehavior)GetValue(CheckBoxBehaviorProperty); }
+            set { SetValue(CheckBoxBehaviorProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.CheckBoxBehavior" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CheckBoxBehaviorProperty =
+            DependencyProperty.Register("CheckBoxBehavior", typeof(NumberBoxCheckBoxBehavior), typeof(NumberBox), new PropertyMetadata(NumberBoxCheckBoxBehavior.None));
+
+        /// <summary>
+        /// Gets or sets the position of the checkbox.
+        /// </summary>
+        /// <remarks>Default value is Dock.Left.</remarks>
+        [DefaultValue(Dock.Left)]
+        public Dock CheckBoxPosition
+        {
+            get { return (Dock)GetValue(CheckBoxPositionProperty); }
+            set { SetValue(CheckBoxPositionProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.CheckBoxPosition" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CheckBoxPositionProperty =
+            DependencyProperty.Register("CheckBoxPosition", typeof(Dock), typeof(NumberBox), new PropertyMetadata(Dock.Left));
+        #endregion CheckBox
+
+        #region UpDown
+        /// <summary>
+        /// Gets or sets the possibilies how the values can be incremented or decremented.
+        /// </summary>
+        /// <remarks>Default value is UpDownBehavior.None.</remarks>
+        [DefaultValue(UpDownBehavior.None)]
+        public UpDownBehavior UpDownBehavior
+        {
+            get { return (UpDownBehavior)GetValue(UpDownBehaviorProperty); }
+            set { SetValue(UpDownBehaviorProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Step" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty UpDownBehaviorProperty =
+            DependencyProperty.Register("UpDownBehavior", typeof(UpDownBehavior), typeof(NumberBox), new PropertyMetadata(UpDownBehavior.None));
+
+        /// <summary>
+        /// Gets or sets the step width to be used when increment the value by the buttons or arrow keys.
+        /// </summary>
+        /// <remarks>The default value will be 1 (or 1.0 for numbers with decimal places)</remarks>
+        public object Step
+        {
+            get { return (object)GetValue(StepProperty); }
             set { SetValue(StepProperty, value); }
         }
 
@@ -192,28 +343,67 @@ namespace DW.WPFToolkit.Controls
         /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Step" /> dependency property.
         /// </summary>
         public static readonly DependencyProperty StepProperty =
-            DependencyProperty.Register("Step", typeof(double), typeof(NumberBox), new PropertyMetadata(1.0));
+            DependencyProperty.Register("Step", typeof(object), typeof(NumberBox), new PropertyMetadata(null, OnStepChanged));
 
-        /// <summary>
-        /// Gets or sets a value that indicates if the NumberBox has up and down buttons.
-        /// </summary>
-        [DefaultValue(false)]
-        public bool HasUpDownButtons
+        private static void OnStepChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get { return (bool)GetValue(HasUpDownButtonsProperty); }
-            set { SetValue(HasUpDownButtonsProperty, value); }
+            var control = (NumberBox)d;
+            control.OnStepChanged(e);
         }
 
         /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.HasUpDownButtons" /> dependency property.
+        /// Gets or sets the position of the up/down buttons.
         /// </summary>
-        public static readonly DependencyProperty HasUpDownButtonsProperty =
-            DependencyProperty.Register("HasUpDownButtons", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
-
+        /// <remarks>Default value is Dock.Right.</remarks>
+        [DefaultValue(Dock.Left)]
+        public Dock UpDownButtonsPosition
+        {
+            get { return (Dock)GetValue(UpDownButtonsPositionProperty); }
+            set { SetValue(UpDownButtonsPositionProperty, value); }
+        }
 
         /// <summary>
-        /// Gets or sets a value that indicates if the NumberBox has a button to reset the value
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.UpDownButtonsPosition" /> dependency property.
         /// </summary>
+        public static readonly DependencyProperty UpDownButtonsPositionProperty =
+            DependencyProperty.Register("UpDownButtonsPosition", typeof(Dock), typeof(NumberBox), new PropertyMetadata(Dock.Right));
+
+        /// <summary>
+        /// Gets or sets a value which indicates if the current number can step up.
+        /// </summary>
+        public bool CanStepUp
+        {
+            get { return (bool)GetValue(CanStepUpProperty); }
+            set { SetValue(CanStepUpProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.CanStepUp" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CanStepUpProperty =
+            DependencyProperty.Register("CanStepUp", typeof(bool), typeof(NumberBox), new PropertyMetadata(true));
+
+        /// <summary>
+        /// Gets or sets a value which indicates if the current number can step down.
+        /// </summary>
+        public bool CanStepDown
+        {
+            get { return (bool)GetValue(CanStepDownProperty); }
+            set { SetValue(CanStepDownProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.CanStepDown" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CanStepDownProperty =
+            DependencyProperty.Register("CanStepDown", typeof(bool), typeof(NumberBox), new PropertyMetadata(true));
+        #endregion UpDown
+
+        #region DefaultNumber
+        /// <summary>
+        /// Gets or sets a value which indicates if the NumberBox has a cancel 'X' button.
+        /// </summary>
+        /// <remarks>Default value is false.</remarks>
         [DefaultValue(false)]
         public bool HasResetButton
         {
@@ -228,182 +418,448 @@ namespace DW.WPFToolkit.Controls
             DependencyProperty.Register("HasResetButton", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
 
         /// <summary>
-        /// Gets or sets the default value to be used when the reset button is pressed.
+        /// Gets or sets the default value to place in when the "ResetButton" (See <see cref="DW.WPFToolkit.Controls.NumberBox.HasResetButton" />) is clicked.
         /// </summary>
-        [DefaultValue(0.0)]
-        public object DefaultValue
+        public object DefaultNumber
         {
-            get { return GetValue(DefaultValueProperty); }
-            set { SetValue(DefaultValueProperty, value); }
+            get { return (object)GetValue(DefaultNumberProperty); }
+            set { SetValue(DefaultNumberProperty, value); }
         }
 
         /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.DefaultValue" /> dependency property.
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.DefaultNumber" /> dependency property.
         /// </summary>
-        public static readonly DependencyProperty DefaultValueProperty =
-            DependencyProperty.Register("DefaultValue", typeof(object), typeof(NumberBox), new PropertyMetadata(0.0));
+        public static readonly DependencyProperty DefaultNumberProperty =
+            DependencyProperty.Register("DefaultNumber", typeof(object), typeof(NumberBox), new PropertyMetadata(null, OnDefaultNumberChanged));
 
-        /// <summary>
-        /// Gets or sets a value that indicates if the NumberBox contains a checkbox.
-        /// </summary>
-        public bool IsCheckable
+        private static void OnDefaultNumberChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get { return (bool)GetValue(IsCheckableProperty); }
-            set { SetValue(IsCheckableProperty, value); }
+            var control = (NumberBox)d;
+            control.OnDefaultNumberChanged(e);
         }
 
         /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.IsCheckable" /> dependency property.
+        /// Gets or sets the position of the reset button within the NumberBox.
         /// </summary>
-        public static readonly DependencyProperty IsCheckableProperty =
-            DependencyProperty.Register("IsCheckable", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
-
-        /// <summary>
-        /// Gets or sets a value that indicates of the NumberBox is checked or not.
-        /// </summary>
-        [DefaultValue(false)]
-        public bool IsChecked
+        public Dock ResetButtonPosition
         {
-            get { return (bool)GetValue(IsCheckedProperty); }
-            set { SetValue(IsCheckedProperty, value); }
+            get { return (Dock)GetValue(ResetButtonPositionProperty); }
+            set { SetValue(ResetButtonPositionProperty, value); }
         }
 
         /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.IsChecked" /> dependency property.
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.ResetButtonPosition" /> dependency property.
         /// </summary>
-        public static readonly DependencyProperty IsCheckedProperty =
-            DependencyProperty.Register("IsChecked", typeof(bool), typeof(NumberBox), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        public static readonly DependencyProperty ResetButtonPositionProperty =
+            DependencyProperty.Register("ResetButtonPosition", typeof(Dock), typeof(NumberBox), new PropertyMetadata(Dock.Right));
 
         /// <summary>
-        /// Gets or sets a value that indicates if the NumberBox gets enabled or disabled depending on the IsChecked state.
+        /// Gets or sets a value which indicates if the reset button can be clicked.
         /// </summary>
-        [DefaultValue(true)]
-        public bool DisabledOnUncheck
+        public bool CanReset
         {
-            get { return (bool)GetValue(DisabledOnUncheckProperty); }
-            set { SetValue(DisabledOnUncheckProperty, value); }
+            get { return (bool)GetValue(CanResetProperty); }
+            set { SetValue(CanResetProperty, value); }
         }
 
         /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.DisabledOnUncheck" /> dependency property.
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.CanReset" /> dependency property.
         /// </summary>
-        public static readonly DependencyProperty DisabledOnUncheckProperty =
-            DependencyProperty.Register("DisabledOnUncheck", typeof(bool), typeof(NumberBox), new PropertyMetadata(true));
+        public static readonly DependencyProperty CanResetProperty =
+            DependencyProperty.Register("CanReset", typeof(bool), typeof(NumberBox), new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        #endregion DefaultNumber
 
-        private double GetMinimum()
+        #region NumberSelectionBehavior
+        /// <summary>
+        /// Gets or sets a value that defines when the number should be selected automatically.
+        /// </summary>
+        /// <remarks>The default behavior is NumberBoxSelection.None.</remarks>
+        [DefaultValue(NumberBoxSelection.None)]
+        public NumberBoxSelection NumberSelectionBehavior
         {
-            if (Minimum == null)
-                return double.MinValue;
-            double value = 0;
-            if (double.TryParse(Minimum.ToString(), NumberStyles.Float, CultureInfo.CurrentUICulture, out value))
-                return value;
-            return double.MinValue;
+            get { return (NumberBoxSelection)GetValue(NumberSelectionBehaviorProperty); }
+            set { SetValue(NumberSelectionBehaviorProperty, value); }
         }
 
-        private double GetMaximum()
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.NumberSelectionBehavior" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty NumberSelectionBehaviorProperty =
+            DependencyProperty.Register("NumberSelectionBehavior", typeof(NumberBoxSelection), typeof(NumberBox), new PropertyMetadata(NumberBoxSelection.None));
+        #endregion NumberSelectionBehavior
+
+        #region LostFocusBehavior
+        /// <summary>
+        /// Gets or sets the bavior to be applied to the number and/or text when the NumberBox lost its focus.
+        /// </summary>
+        public LostFocusBehavior LostFocusBehavior
         {
-            if (Maximum == null)
-                return double.MaxValue;
-            double value = 0;
-            if (double.TryParse(Maximum.ToString(), NumberStyles.Float, CultureInfo.CurrentUICulture, out value))
-                return value;
-            return double.MaxValue;
+            get { return (LostFocusBehavior)GetValue(LostFocusBehaviorProperty); }
+            set { SetValue(LostFocusBehaviorProperty, value); }
         }
 
-        private bool Parse(TextBox box, string insertText)
-        {
-            string input = box.Text;
-            input = input.Remove(box.SelectionStart, box.SelectionLength);
-            input = input.Insert(box.SelectionStart, insertText);
-            if ((input.Equals("-", StringComparison.Ordinal)) && GetMinimum() < 0)
-                return true;
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.LostFocusBehavior" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty LostFocusBehaviorProperty =
+            DependencyProperty.Register("LostFocusBehavior", typeof(LostFocusBehavior), typeof(NumberBox), new PropertyMetadata(null));
+        #endregion LostFocusBehavior
 
-            if (NumberType == NumberTypes.Integer)
+        #region Cultures
+        /// <summary>
+        /// Gets or sets the culture to be used to parse the user input.
+        /// </summary>
+        /// <remarks>If not set CultureInfo.CurrentUICulture will be used.</remarks>
+        public CultureInfo InputCulture
+        {
+            get { return (CultureInfo)GetValue(InputCultureProperty); }
+            set { SetValue(InputCultureProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.InputCulture" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty InputCultureProperty =
+            DependencyProperty.Register("InputCulture", typeof(CultureInfo), typeof(NumberBox), new PropertyMetadata(null, OnInputCultureChanged));
+
+        private static void OnInputCultureChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (NumberBox)d;
+            control.OnInputCultureChanged(e);
+        }
+
+        /// <summary>
+        /// Gets or sets the culture to be used to parse the value defined in the xaml file like <see cref="DW.WPFToolkit.Controls.NumberBox.Minimum" />, <see cref="DW.WPFToolkit.Controls.NumberBox.Maximum" /> and <see cref="DW.WPFToolkit.Controls.NumberBox.DefaultNumber" />.
+        /// </summary>
+        /// <remarks>If not set CultureInfo.CurrentUICulture will be used.</remarks>
+        public CultureInfo PredefinesCulture
+        {
+            get { return (CultureInfo)GetValue(PredefinesCultureProperty); }
+            set { SetValue(PredefinesCultureProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.PredefinesCulture" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty PredefinesCultureProperty =
+            DependencyProperty.Register("PredefinesCulture", typeof(CultureInfo), typeof(NumberBox), new PropertyMetadata(null));
+        #endregion Cultures
+
+        #region NumberChanged
+        /// <summary>
+        /// Occurs when the Numvber value has been changed.
+        /// </summary>
+        public event NumberChangedEventHandler NumberChanged
+        {
+            add { AddHandler(NumberChangedEvent, value); }
+            remove { RemoveHandler(NumberChangedEvent, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.NumberChanged" /> routed event.
+        /// </summary>
+        public static readonly RoutedEvent NumberChangedEvent =
+            EventManager.RegisterRoutedEvent("NumberChanged", RoutingStrategy.Bubble, typeof(NumberChangedEventHandler), typeof(NumberBox));
+        #endregion NumberChanged
+
+        /// <summary>
+        /// The template gets added to the control.
+        /// </summary>
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            _textBox = GetTemplateChild("PART_TextBox") as TextBox;
+            if (_textBox == null)
+                return;
+
+            _upButton = GetTemplateChild("PART_UpButton") as RepeatButton;
+            if (_upButton != null)
+                _upButton.Click += HandleUpClick;
+
+            _downButton = GetTemplateChild("PART_DownButton") as RepeatButton;
+            if (_downButton != null)
+                _downButton.Click += HandleDownClick;
+
+            _resetButton = GetTemplateChild("PART_ResetButton") as Button;
+            if (_resetButton != null)
+                _resetButton.Click += HandleResetClick;
+
+            _number.Initialize(Number, Minimum, Maximum, Step, DefaultNumber, InputCulture, PredefinesCulture);
+            _textBox.Text = _number.ToString();
+
+            _textBox.PreviewKeyDown += HandleTextBoxPreviewKeyDown;
+            _textBox.PreviewTextInput += HandlePreviewTextInput;
+            _textBox.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, null, CanPasteCommand));
+            _textBox.GotFocus += HandleTextBoxGotFocus;
+            _textBox.LostFocus += HandleTextBoxLostFocus;
+
+            EnableDisableUpDownButtons();
+        }
+
+        private void HandleTextBoxPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
             {
-                var value = 0;
-                if (int.TryParse(input, NumberStyles.Integer, CultureInfo.CurrentUICulture, out value) && IsValidRange(value))
-                    return true;
-                return false;
-            }
-            else
-            {
-                double value = 0;
-                if (double.TryParse(input, NumberStyles.Float, CultureInfo.CurrentUICulture, out value) && IsValidRange(value))
-                    return true;
-                return false;
+                case Key.Space:
+                    {
+                        e.Handled = true;
+                        break;
+                    }
+                case Key.Delete:
+                    {
+                        var newText = _textBox.SelectionLength > 0 ? TextWithRemovedSelection() : TextWithRemovedAfter();
+                        _number.TakeNumber(newText);
+                        TakeNumber();
+                        break;
+                    }
+                case Key.Back:
+                    {
+                        var newText = _textBox.SelectionLength > 0 ? TextWithRemovedSelection() : TextWithRemovedBefore();
+                        _number.TakeNumber(newText);
+                        TakeNumber();
+                        break;
+                    }
+                case Key.Up:
+                    {
+                        if (UpDownBehavior == UpDownBehavior.Arrows || UpDownBehavior == UpDownBehavior.ArrowsAndButtons)
+                            HandleUpClick(this, null);
+                        break;
+                    }
+                case Key.Down:
+                    {
+                        if (UpDownBehavior == UpDownBehavior.Arrows || UpDownBehavior == UpDownBehavior.ArrowsAndButtons)
+                            HandleDownClick(this, null);
+                        break;
+                    }
             }
         }
 
         private void CanPasteCommand(object sender, CanExecuteRoutedEventArgs e)
         {
+            if (!Clipboard.ContainsText())
+                return;
+
+            var textToPaste = Clipboard.GetText();
+
+            var currentText = _textBox.Text;
+            currentText = currentText.Remove(_textBox.SelectionStart, _textBox.SelectionLength);
+            currentText = currentText.Insert(_textBox.SelectionStart, textToPaste);
+
             e.CanExecute = false;
-            if (Clipboard.ContainsText())
+            if (_number.TakeNumber(currentText))
             {
-                if (Parse(sender as TextBox, Clipboard.GetText()))
-                    e.CanExecute = true;
+                e.CanExecute = true;
+                TakeNumber();
+            }
+
+            e.Handled = true;
+        }
+
+        private void HandleUpClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            _number.Increase();
+            TakeNumber();
+            _textBox.Text = _number.ToString();
+            if (NumberSelectionBehavior == NumberBoxSelection.OnFocusAndUpDown || NumberSelectionBehavior == NumberBoxSelection.OnUpDown)
+                SelectAll();
+        }
+
+        private void HandleDownClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            _number.Decrease();
+            TakeNumber();
+            _textBox.Text = _number.ToString();
+            if (NumberSelectionBehavior == NumberBoxSelection.OnFocusAndUpDown || NumberSelectionBehavior == NumberBoxSelection.OnUpDown)
+                SelectAll();
+        }
+
+        private void HandleResetClick(object sender, RoutedEventArgs e)
+        {
+            _number.Reset();
+            TakeNumber();
+            _textBox.Text = _number.ToString();
+        }
+
+        private void EnableDisableUpDownButtons()
+        {
+            CanStepUp = _number.CanIncrease;
+            CanStepDown = _number.CanDecrease;
+        }
+
+        private void HandlePreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (e.Text == "-" && _number.AcceptNegative && (string.IsNullOrEmpty(_textBox.Text) || _textBox.SelectionLength == _textBox.Text.Length))
+                return;
+
+            var currentText = _textBox.Text;
+            currentText = currentText.Remove(_textBox.SelectionStart, _textBox.SelectionLength);
+            currentText = currentText.Insert(_textBox.SelectionStart, e.Text);
+
+            if (_number.TakeNumber(currentText))
+            {
+                TakeNumber();
+                return;
             }
             e.Handled = true;
         }
 
-        private bool IsValidRange(double value)
+        private void TakeNumber()
         {
-            if ((value >= GetMinimum()) && (value <= GetMaximum()))
-                return true;
-            return false;
+            _selfChange = true;
+            Number = _number.CurrentNumber;
+            _selfChange = false;
         }
 
-        /// <summary>
-        /// Handles key down in the text box.
-        /// </summary>
-        /// <param name="e">The parameter called by the owner.</param>
-        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        private string TextWithRemovedSelection()
         {
-            if (e.Key == Key.Space)
-                e.Handled = true;
+            return _textBox.Text.Remove(_textBox.SelectionStart, _textBox.SelectionLength);
+        }
 
-            if (!HasUpDownButtons)
+        private string TextWithRemovedBefore()
+        {
+            if (_textBox.SelectionStart == -1)
+                return _textBox.Text;
+            if (_textBox.SelectionStart == 0)
+                return _textBox.Text;
+
+            return _textBox.Text.Remove(_textBox.SelectionStart - 1, 1);
+        }
+
+        private string TextWithRemovedAfter()
+        {
+            if (_textBox.SelectionStart == -1)
+                return _textBox.Text;
+
+            if (_textBox.SelectionStart == _textBox.Text.Length)
+                return _textBox.Text;
+
+            return _textBox.Text.Remove(_textBox.SelectionStart, 1);
+        }
+
+        private void OnNumberTypeChanged(DependencyPropertyChangedEventArgs e)
+        {
+            _number = NumberFactory.Create((NumberType)e.NewValue);
+            _number.Initialize(Number, Minimum, Maximum, Step, DefaultNumber, InputCulture, PredefinesCulture);
+        }
+
+        private void OnNumberChanged(DependencyPropertyChangedEventArgs e)
+        {
+            EnableDisableUpDownButtons();
+
+            if (e.OldValue != e.NewValue)
+                OnNumberChanged(e.OldValue, e.NewValue);
+
+            if (_selfChange)
                 return;
 
-            if (e.Key == Key.Up)
-                HandleUpButtonClick(null, null);
-            else if (e.Key == Key.Down)
-                HandleDownButtonClick(null, null);
+            _number.TakeNumber(e.NewValue);
+
+            if (_textBox != null)
+                _textBox.Text = _number.ToString();
+
+            EnableDisableUpDownButtons();
         }
 
-        /// <summary>
-        /// Handles user input in the text box.
-        /// </summary>
-        /// <param name="e">The parameter called by the owner.</param>
-        protected override void OnPreviewTextInput(TextCompositionEventArgs e)
+        private void OnMinimumChanged(DependencyPropertyChangedEventArgs e)
         {
-            if (Parse(this, e.Text))
-                base.OnPreviewTextInput(e);
-            else
-                e.Handled = true;
+            _number.TakeMinimum(e.NewValue);
         }
 
-        /// <summary>
-        /// Returns the written value as integer if possible; otherwise 0.
-        /// </summary>
-        /// <returns>The written value as integer if possible; otherwise 0.</returns>
-        public int GetInteger()
+        private void OnMaximumChanged(DependencyPropertyChangedEventArgs e)
         {
-            int value;
-            if (int.TryParse(Text, NumberStyles.Integer, CultureInfo.CurrentUICulture, out value) && IsValidRange(value))
-                return value;
-            return 0;
+            _number.TakeMaximum(e.NewValue);
         }
 
-        /// <summary>
-        /// Returns the written value as double if possible; otherwise 0.0
-        /// </summary>
-        /// <returns>The written value as double if possible; otherwise 0.0</returns>
-        public double GetDouble()
+        private void OnStepChanged(DependencyPropertyChangedEventArgs e)
         {
-            double value;
-            if (double.TryParse(Text, NumberStyles.Float, CultureInfo.CurrentUICulture, out value) && IsValidRange(value))
-                return value;
-            return 0;
+            _number.TakeStep(e.NewValue);
+        }
+
+        private void OnDefaultNumberChanged(DependencyPropertyChangedEventArgs e)
+        {
+            _number.TakeDefaultNumber(e.NewValue);
+        }
+
+        private void OnInputCultureChanged(DependencyPropertyChangedEventArgs e)
+        {
+            _number.TakeCulture(e.NewValue);
+        }
+
+        private void OnNumberChanged(object oldNumber, object newNumber)
+        {
+            RaiseEvent(new NumberChangedEventArgs(oldNumber, newNumber));
+        }
+
+        private void HandleTextBoxGotFocus(object sender, RoutedEventArgs e)
+        {
+            if (NumberSelectionBehavior == NumberBoxSelection.OnFocusAndUpDown || NumberSelectionBehavior == NumberBoxSelection.OnFocus)
+                SelectAll();
+        }
+
+        private void HandleTextBoxLostFocus(object sender, RoutedEventArgs e)
+        {
+            var behavior = LostFocusBehavior;
+            if (behavior == null)
+                return;
+
+            HandleNullValue(behavior);
+            HandleTrimming(behavior);
+            HandleFormatting(behavior);
+        }
+
+        private void HandleNullValue(LostFocusBehavior behavior)
+        {
+            if (_number.CurrentNumber != null)
+                return;
+            switch (behavior.Value)
+            {
+                case ValueBehavior.PlaceDefaultNumber:
+                    _number.Reset();
+                    break;
+                case ValueBehavior.PlaceMaximumNumber:
+                    _number.ToMaximum();
+                    break;
+                case ValueBehavior.PlaceMinimumNumber:
+                    _number.ToMinimum();
+                    break;
+            }
+
+            TakeNumber();
+            _textBox.Text = _number.ToString();
+        }
+
+        private void HandleTrimming(LostFocusBehavior behavior)
+        {
+            if (!behavior.TrimLeadingZero)
+                return;
+
+            _textBox.Text = string.Format("{0}", _number.CurrentNumber);
+        }
+
+        private void HandleFormatting(LostFocusBehavior behavior)
+        {
+            if (string.IsNullOrWhiteSpace(behavior.FormatText))
+                return;
+
+            _textBox.Text = string.Format(behavior.FormatText, _number.CurrentNumber);
+        }
+
+        private void SelectAll()
+        {
+            _textBox.Dispatcher.BeginInvoke(new Action(() => { _textBox.SelectAll(); }), DispatcherPriority.Render);
+        }
+
+        internal int SelectionStart { get { return _textBox.SelectionStart; } }
+
+        internal void Tab(FocusNavigationDirection direction)
+        {
+            _textBox.MoveFocus(new TraversalRequest(direction));
+        }
+
+        internal string Text
+        {
+            get { return _textBox.Text; }
         }
     }
 }

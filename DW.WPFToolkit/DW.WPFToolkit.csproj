@@ -45,6 +45,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -108,12 +109,35 @@
     <Compile Include="Controls\NavigationBar\NavigationBarItem.cs" />
     <Compile Include="Controls\NavigationBar\NavigationBarPanel.cs" />
     <Compile Include="Controls\NavigationBar\NavigationBarToggleButton.cs" />
+    <Compile Include="Controls\NumberBox\LostFocusBehavior.cs" />
     <Compile Include="Controls\NumberBox\NumberBox.cs" />
+    <Compile Include="Controls\NumberBox\NumberBoxCheckBoxBehavior.cs" />
+    <Compile Include="Controls\NumberBox\NumberBoxSelection.cs" />
+    <Compile Include="Controls\NumberBox\NumberChangedEventArgs.cs" />
     <Compile Include="Controls\NumberBox\NumberCheckBox.cs" />
+    <Compile Include="Controls\NumberBox\NumberCurrencyLabel.cs" />
     <Compile Include="Controls\NumberBox\NumberResetButton.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\INumber.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_BigInteger.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_byte.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_decimal.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_double.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_float.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_int.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_long.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_sbyte.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_short.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_ulong.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_ushort.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\Number.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NumberFactory.cs" />
+    <Compile Include="Controls\NumberBox\Numbers\NB_uint.cs" />
     <Compile Include="Controls\NumberBox\NumberTypes.cs" />
+    <Compile Include="Controls\NumberBox\UpDownBehavior.cs" />
     <Compile Include="Controls\NumberBox\UpDownButton.cs" />
     <Compile Include="Controls\NumberBox\UpDownDirections.cs" />
+    <Compile Include="Controls\NumberBox\ValueBehavior.cs" />
+    <Compile Include="Controls\NumberBox\ValueChangedEventHandler.cs" />
     <Compile Include="Controls\PagingControl\PagingControl.cs" />
     <Compile Include="Controls\PagingControl\PagingItem.cs" />
     <Compile Include="Controls\PagingControl\PagingJumpBar.cs" />
@@ -234,10 +258,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Controls\NumberBox\Styles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Controls\PagingControl\Styles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -249,6 +269,10 @@
     <Page Include="Controls\SplitButton\Styles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\NumberBox\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\TimeBox\Styles.xaml">
       <Generator>MSBuild:Compile</Generator>

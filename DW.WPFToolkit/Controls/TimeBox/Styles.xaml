@@ -57,32 +57,47 @@ THE SOFTWARE
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Controls:NumberBox AutomationProperties.AutomationId="CUI_HoursTextBox"
+                                                    x:Name="PART_HourBox"
+                                                    NumberType="Int"
                                                     Minimum="0"
-                                                    Maximum="24"
+                                                    Maximum="23"
+                                                    DefaultNumber="0"
+                                                    UpDownBehavior="Arrows"
+                                                    Step="1"
+                                                    NumberSelectionBehavior="OnFocusAndUpDown"
+                                                    LostFocusBehavior="{Controls:LostFocusBehavior PlaceDefaultNumber, FormatText={}{0:D2}}"
                                                     BorderThickness="0"
-                                                    Interactivity:TextBoxBehavior.SelectAllOnFocus="True"
                                                     Background="{TemplateBinding Background}"
-                                                    Foreground="{TemplateBinding Foreground}"
-                                                    x:Name="PART_HourBox" />
+                                                    Foreground="{TemplateBinding Foreground}" />
                                 <TextBlock Text=":" />
                                 <Controls:NumberBox AutomationProperties.AutomationId="CUI_MinutesTextBox"
+                                                    x:Name="PART_MinuteBox"
+                                                    NumberType="Int"
                                                     Minimum="0"
                                                     Maximum="59"
+                                                    DefaultNumber="0"
+                                                    UpDownBehavior="Arrows"
+                                                    Step="1"
+                                                    NumberSelectionBehavior="OnFocusAndUpDown"
+                                                    LostFocusBehavior="{Controls:LostFocusBehavior PlaceDefaultNumber, FormatText={}{0:D2}}"
                                                     BorderThickness="0"
-                                                    Interactivity:TextBoxBehavior.SelectAllOnFocus="True"
                                                     Background="{TemplateBinding Background}"
-                                                    Foreground="{TemplateBinding Foreground}"
-                                                    x:Name="PART_MinuteBox" />
+                                                    Foreground="{TemplateBinding Foreground}" />
                                 <StackPanel Orientation="Horizontal" x:Name="longFormat">
                                     <TextBlock Text=":" />
                                     <Controls:NumberBox AutomationProperties.AutomationId="CUI_SecondsTextBox"
+                                                        x:Name="PART_SecondBox"
+                                                        NumberType="Int"
                                                         Minimum="0"
                                                         Maximum="59"
+                                                        DefaultNumber="0"
+                                                        UpDownBehavior="Arrows"
+                                                        Step="1"
+                                                        NumberSelectionBehavior="OnFocusAndUpDown"
+                                                        LostFocusBehavior="{Controls:LostFocusBehavior PlaceDefaultNumber, FormatText={}{0:D2}}"
                                                         BorderThickness="0"
-                                                        Interactivity:TextBoxBehavior.SelectAllOnFocus="True"
                                                         Background="{TemplateBinding Background}"
-                                                        Foreground="{TemplateBinding Foreground}"
-                                                        x:Name="PART_SecondBox" />
+                                                        Foreground="{TemplateBinding Foreground}" />
                                 </StackPanel>
                             </StackPanel>
                         </DockPanel>
