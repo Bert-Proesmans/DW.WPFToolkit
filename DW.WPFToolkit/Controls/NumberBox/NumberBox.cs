@@ -71,6 +71,7 @@ namespace DW.WPFToolkit.Controls
     /// ]]>
     /// </code>
     /// </example>
+    [TemplatePart(Name = "PART_TextBox", Type = typeof(TextBox))]
     [TemplatePart(Name = "PART_UpButton", Type = typeof(RepeatButton))]
     [TemplatePart(Name = "PART_DownButton", Type = typeof(RepeatButton))]
     [TemplatePart(Name = "PART_ResetButton", Type = typeof(Button))]
