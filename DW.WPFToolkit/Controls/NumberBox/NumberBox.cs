@@ -193,26 +193,9 @@ namespace DW.WPFToolkit.Controls
 
         #region Unit
         /// <summary>
-        /// Gets or sets the value which indicates if the NumberBox shows a unit.
+        /// Gets or sets the unit.
         /// </summary>
-        /// <remarks>Default value is false.</remarks>
-        [DefaultValue(false)]
-        public bool ShowUnit
-        {
-            get { return (bool)GetValue(ShowUnitProperty); }
-            set { SetValue(ShowUnitProperty, value); }
-        }
-
-        /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.ShowUnit" /> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty ShowUnitProperty =
-            DependencyProperty.Register("ShowUnit", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
-
-        /// <summary>
-        /// Gets or sets the unit. Its visible when setting <see cref="DW.WPFToolkit.Controls.NumberBox.ShowUnit" /> to true.
-        /// </summary>
-        /// <remarks>Default value is null.</remarks>
+        /// <remarks>Default value is null. The unit is collapsed then.</remarks>
         [DefaultValue(null)]
         public object Unit
         {
