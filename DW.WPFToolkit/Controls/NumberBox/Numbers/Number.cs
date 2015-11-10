@@ -42,11 +42,11 @@ namespace DW.WPFToolkit.Controls.Numbers
         public void Initialize(object number, object minimum, object maximum, object step, object defaultNumber, CultureInfo parsingCulture, CultureInfo predefinedCulture)
         {
             TakeCulture(predefinedCulture);
-            TakeNumber(number);
             TakeMinimum(minimum);
             TakeMaximum(maximum);
             TakeStep(step);
             TakeDefaultNumber(defaultNumber);
+            TakeNumber(number);
             TakeCulture(parsingCulture);
         }
 
