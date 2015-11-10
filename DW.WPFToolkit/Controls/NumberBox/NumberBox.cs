@@ -546,6 +546,25 @@ namespace DW.WPFToolkit.Controls
             EventManager.RegisterRoutedEvent("NumberChanged", RoutingStrategy.Bubble, typeof(NumberChangedEventHandler), typeof(NumberBox));
         #endregion NumberChanged
 
+        #region IsReadOnly
+        /// <summary>
+        /// Gets or sets a value if the textbox is shown read only.
+        /// </summary>
+        /// <remarks>The default is false.</remarks>
+        [DefaultValue(false)]
+        public bool IsReadOnly
+        {
+            get { return (bool)GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.IsReadOnly" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsReadOnlyProperty =
+            DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
+        #endregion IsReadOnly
+
         /// <summary>
         /// The template gets added to the control.
         /// </summary>
@@ -606,13 +625,13 @@ namespace DW.WPFToolkit.Controls
                     }
                 case Key.Up:
                     {
-                        if (UpDownBehavior == UpDownBehavior.Arrows || UpDownBehavior == UpDownBehavior.ArrowsAndButtons)
+                        if ((UpDownBehavior == UpDownBehavior.Arrows || UpDownBehavior == UpDownBehavior.ArrowsAndButtons) && !IsReadOnly)
                             HandleUpClick(this, null);
                         break;
                     }
                 case Key.Down:
                     {
-                        if (UpDownBehavior == UpDownBehavior.Arrows || UpDownBehavior == UpDownBehavior.ArrowsAndButtons)
+                        if ((UpDownBehavior == UpDownBehavior.Arrows || UpDownBehavior == UpDownBehavior.ArrowsAndButtons) && !IsReadOnly)
                             HandleDownClick(this, null);
                         break;
                     }

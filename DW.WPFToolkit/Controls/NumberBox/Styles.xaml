@@ -177,6 +177,7 @@ THE SOFTWARE
                             
                             <TextBox BorderThickness="0"
                                      x:Name="PART_TextBox"
+                                     IsReadOnly="{TemplateBinding IsReadOnly}"
                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                      AutomationProperties.AutomationId="CUI_TextBox" />
                         
@@ -219,6 +220,10 @@ THE SOFTWARE
                         </Trigger>
                         <Trigger Property="UpDownBehavior" Value="ArrowsAndButtons">
                             <Setter TargetName="PART_UpDownButtons" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsReadOnly" Value="True">
+                            <Setter TargetName="PART_UpButton" Property="IsEnabled" Value="False" />
+                            <Setter TargetName="PART_DownButton" Property="IsEnabled" Value="False" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
