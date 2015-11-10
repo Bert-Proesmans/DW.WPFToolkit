@@ -565,6 +565,25 @@ namespace DW.WPFToolkit.Controls
             DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
         #endregion IsReadOnly
 
+        #region AcceptUpDownOnNull
+        /// <summary>
+        /// Gets or sets a value which indicates if increment and decrement is possible even if the value is null. Minimum or maximum then will be placed in.
+        /// </summary>
+        /// <remarks>The default value is false.</remarks>
+        [DefaultValue(false)]
+        public bool AcceptUpDownOnNull
+        {
+            get { return (bool)GetValue(AcceptUpDownOnNullProperty); }
+            set { SetValue(AcceptUpDownOnNullProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.AcceptUpDownOnNull" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty AcceptUpDownOnNullProperty =
+            DependencyProperty.Register("AcceptUpDownOnNull", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
+        #endregion AcceptUpDownOnNull
+
         /// <summary>
         /// The template gets added to the control.
         /// </summary>
@@ -661,7 +680,10 @@ namespace DW.WPFToolkit.Controls
 
         private void HandleUpClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            _number.Increase();
+            if (AcceptUpDownOnNull && Number == null)
+                _number.ToMinimum();
+            else
+                _number.Increase();
             TakeNumber();
             _textBox.Text = _number.ToString();
             if (NumberSelectionBehavior == NumberBoxSelection.OnFocusAndUpDown || NumberSelectionBehavior == NumberBoxSelection.OnUpDown)
@@ -670,7 +692,10 @@ namespace DW.WPFToolkit.Controls
 
         private void HandleDownClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            _number.Decrease();
+            if (AcceptUpDownOnNull && Number == null)
+                _number.ToMaximum();
+            else
+                _number.Decrease();
             TakeNumber();
             _textBox.Text = _number.ToString();
             if (NumberSelectionBehavior == NumberBoxSelection.OnFocusAndUpDown || NumberSelectionBehavior == NumberBoxSelection.OnUpDown)
@@ -686,6 +711,13 @@ namespace DW.WPFToolkit.Controls
 
         private void EnableDisableUpDownButtons()
         {
+            if (AcceptUpDownOnNull && Number == null)
+            {
+                CanStepUp = true;
+                CanStepDown = true;
+                return;
+            }
+
             CanStepUp = _number.CanIncrease;
             CanStepDown = _number.CanDecrease;
         }

@@ -7,6 +7,7 @@ Release 5.6.0.0
               NumberBox: Bind the visibility of the unity by its set value
               NumberBox: Number written in the XAMl directly were not taken for all types except BigInteger
               NumberBox: Add IsReadOnly property
+              NumberBox: Add AcceptUpDownOnNull to be able to place minimum or maximum by the up downs when the value is null
 2015-11-08    NumberBox: Renew the NumberBox and extend it with many new features
 2015-10-08    VisualTreeAssist: Rename Childs by Children
 2015-10-07    BrowseTextBox: Prevent browse button to be shared if placed in the same panel
