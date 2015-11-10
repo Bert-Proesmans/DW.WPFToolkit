@@ -3,6 +3,7 @@
 ==============================
 Release 5.6.0.0
 ==============================
+2015-11-10    NumberBox: Rename Currency by Unit
 2015-11-08    NumberBox: Renew the NumberBox and extend it with many new features
 2015-10-08    VisualTreeAssist: Rename Childs by Children
 2015-10-07    BrowseTextBox: Prevent browse button to be shared if placed in the same panel

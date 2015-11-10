@@ -115,7 +115,7 @@
     <Compile Include="Controls\NumberBox\NumberBoxSelection.cs" />
     <Compile Include="Controls\NumberBox\NumberChangedEventArgs.cs" />
     <Compile Include="Controls\NumberBox\NumberCheckBox.cs" />
-    <Compile Include="Controls\NumberBox\NumberCurrencyLabel.cs" />
+    <Compile Include="Controls\NumberBox\NumberUnitLabel.cs" />
     <Compile Include="Controls\NumberBox\NumberResetButton.cs" />
     <Compile Include="Controls\NumberBox\Numbers\INumber.cs" />
     <Compile Include="Controls\NumberBox\Numbers\NB_BigInteger.cs" />

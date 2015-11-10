@@ -190,58 +190,58 @@ namespace DW.WPFToolkit.Controls
         }
         #endregion Maximum
 
-        #region Currency
+        #region Unit
         /// <summary>
-        /// Gets or sets the value which indicates if the NumberBox shows a currency symbol.
+        /// Gets or sets the value which indicates if the NumberBox shows a unit.
         /// </summary>
         /// <remarks>Default value is false.</remarks>
         [DefaultValue(false)]
-        public bool ShowCurrency
+        public bool ShowUnit
         {
-            get { return (bool)GetValue(ShowCurrencyProperty); }
-            set { SetValue(ShowCurrencyProperty, value); }
+            get { return (bool)GetValue(ShowUnitProperty); }
+            set { SetValue(ShowUnitProperty, value); }
         }
 
         /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.ShowCurrency" /> dependency property.
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.ShowUnit" /> dependency property.
         /// </summary>
-        public static readonly DependencyProperty ShowCurrencyProperty =
-            DependencyProperty.Register("ShowCurrency", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
+        public static readonly DependencyProperty ShowUnitProperty =
+            DependencyProperty.Register("ShowUnit", typeof(bool), typeof(NumberBox), new PropertyMetadata(false));
 
         /// <summary>
-        /// Gets or sets the currency symbol. Its visible when setting <see cref="DW.WPFToolkit.Controls.NumberBox.ShowCurrency" /> to true.
+        /// Gets or sets the unit. Its visible when setting <see cref="DW.WPFToolkit.Controls.NumberBox.ShowUnit" /> to true.
         /// </summary>
-        /// <remarks>Default value is €.</remarks>
-        [DefaultValue("€")]
-        public object Currency
+        /// <remarks>Default value is null.</remarks>
+        [DefaultValue(null)]
+        public object Unit
         {
-            get { return (object)GetValue(CurrencyProperty); }
-            set { SetValue(CurrencyProperty, value); }
+            get { return (object)GetValue(UnitProperty); }
+            set { SetValue(UnitProperty, value); }
         }
 
         /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Currency" /> dependency property.
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.Unit" /> dependency property.
         /// </summary>
-        public static readonly DependencyProperty CurrencyProperty =
-            DependencyProperty.Register("Currency", typeof(object), typeof(NumberBox), new PropertyMetadata("€"));
+        public static readonly DependencyProperty UnitProperty =
+            DependencyProperty.Register("Unit", typeof(object), typeof(NumberBox), new PropertyMetadata(null));
 
         /// <summary>
-        /// Gets or sets the position of the currency symbol within the NumberBox.
+        /// Gets or sets the position of the unit within the NumberBox.
         /// </summary>
         /// <remarks>Default value is Dock.Right.</remarks>
         [DefaultValue(Dock.Right)]
-        public Dock CurrencyPosition
+        public Dock UnitPosition
         {
-            get { return (Dock)GetValue(CurrencyPositionProperty); }
-            set { SetValue(CurrencyPositionProperty, value); }
+            get { return (Dock)GetValue(UnitPositionProperty); }
+            set { SetValue(UnitPositionProperty, value); }
         }
 
         /// <summary>
-        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.CurrencyPosition" /> dependency property.
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.NumberBox.UnitPosition" /> dependency property.
         /// </summary>
-        public static readonly DependencyProperty CurrencyPositionProperty =
-            DependencyProperty.Register("CurrencyPosition", typeof(Dock), typeof(NumberBox), new PropertyMetadata(Dock.Right));
-        #endregion Currency
+        public static readonly DependencyProperty UnitPositionProperty =
+            DependencyProperty.Register("UnitPosition", typeof(Dock), typeof(NumberBox), new PropertyMetadata(Dock.Right));
+        #endregion Unit
 
         #region CheckBox
         /// <summary>

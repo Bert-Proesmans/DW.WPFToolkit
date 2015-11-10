@@ -112,7 +112,7 @@ THE SOFTWARE
         </Setter>
     </Style>
 
-    <Style TargetType="{x:Type Controls:NumberCurrencyLabel}" BasedOn="{StaticResource {x:Type Label}}">
+    <Style TargetType="{x:Type Controls:NumberUnitLabel}" BasedOn="{StaticResource {x:Type Label}}">
         <Setter Property="Padding" Value="0,0,2,0" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
@@ -166,12 +166,12 @@ THE SOFTWARE
                                 <Controls:UpDownButton Direction="Down" x:Name="PART_DownButton" Focusable="False" AutomationProperties.AutomationId="CUI_DownButton" />
                             </StackPanel>
                             
-                            <Controls:NumberCurrencyLabel x:Name="PART_CurrencyLabel"
-                                                          DockPanel.Dock="{TemplateBinding CurrencyPosition}"
-                                                          VerticalAlignment="Center"
-                                                          Content="{TemplateBinding Currency}"
-                                                          Visibility="{TemplateBinding ShowCurrency, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                          AutomationProperties.AutomationId="CUI_CurrencyLabel" />
+                            <Controls:NumberUnitLabel x:Name="PART_UnitLabel"
+                                                      DockPanel.Dock="{TemplateBinding UnitPosition}"
+                                                      VerticalAlignment="Center"
+                                                      Content="{TemplateBinding Unit}"
+                                                      Visibility="{TemplateBinding ShowUnit, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                      AutomationProperties.AutomationId="CUI_UnitLabel" />
                             
                             <TextBox BorderThickness="0"
                                      x:Name="PART_TextBox"
@@ -186,7 +186,7 @@ THE SOFTWARE
                                 <Condition Property="CheckBoxBehavior" Value="DisableIfChecked" />
                                 <Condition Property="IsChecked" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="PART_CurrencyLabel" Property="IsEnabled" Value="False" />
+                            <Setter TargetName="PART_UnitLabel" Property="IsEnabled" Value="False" />
                             <Setter TargetName="PART_TextBox" Property="IsEnabled" Value="False" />
                             <Setter TargetName="PART_UpButton" Property="IsEnabled" Value="False" />
                             <Setter TargetName="PART_DownButton" Property="IsEnabled" Value="False" />
@@ -197,7 +197,7 @@ THE SOFTWARE
                                 <Condition Property="CheckBoxBehavior" Value="EnableIfChecked" />
                                 <Condition Property="IsChecked" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="PART_CurrencyLabel" Property="IsEnabled" Value="False" />
+                            <Setter TargetName="PART_UnitLabel" Property="IsEnabled" Value="False" />
                             <Setter TargetName="PART_TextBox" Property="IsEnabled" Value="False" />
                             <Setter TargetName="PART_UpButton" Property="IsEnabled" Value="False" />
                             <Setter TargetName="PART_DownButton" Property="IsEnabled" Value="False" />

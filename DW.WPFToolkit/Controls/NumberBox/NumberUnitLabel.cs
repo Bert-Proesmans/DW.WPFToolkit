@@ -32,11 +32,11 @@ namespace DW.WPFToolkit.Controls
     /// <summary>
     /// Represents the currency symbol shown in the <see cref="DW.WPFToolkit.Controls.NumberBox" />.
     /// </summary>
-    public class NumberCurrencyLabel : Label
+    public class NumberUnitLabel : Label
     {
-        static NumberCurrencyLabel()
+        static NumberUnitLabel()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(NumberCurrencyLabel), new FrameworkPropertyMetadata(typeof(NumberCurrencyLabel)));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(NumberUnitLabel), new FrameworkPropertyMetadata(typeof(NumberUnitLabel)));
         }
     }
 }
