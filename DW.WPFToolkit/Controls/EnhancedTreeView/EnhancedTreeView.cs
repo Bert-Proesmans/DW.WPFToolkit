@@ -32,27 +32,44 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using DW.WPFToolkit.Helpers;
 
 namespace DW.WPFToolkit.Controls
 {
     /// <summary>
-    /// Enhances the <see cref="System.Windows.Controls.TreeView" /> with a multi select possibility and stretching of its child items over the whole width.
+    /// Enhances the <see cref="System.Windows.Controls.TreeView" /> with:<br />
+    /// * multi select,
+    /// * stretching of its child items over the whole width,
+    /// * select an item by rightclick on it and
+    /// * a two way bindable SelectedItem.
     /// </summary>
     /// <example>
     /// <code lang="XAML">
     /// <![CDATA[
-    /// <WPFToolkit:EnhancedTreeView SelectionMode="Extended" ItemsContentStretching="True">
-    ///     <WPFToolkit:EnhancedTreeView.ItemContainerStyle>
-    ///         <Style TargetType="{x:Type WPFToolkit:EnhancedTreeViewItem}">
-    ///             <Setter Property="ContentStretching" Value="True" />
-    ///         </Style>
-    ///     </WPFToolkit:EnhancedTreeView.ItemContainerStyle>
+    /// <WPFToolkit:EnhancedTreeView SelectedItems="{Binding Items}">
+    ///                              SelectionMode="Extended">
     /// </WPFToolkit:EnhancedTreeView>
+    /// 
+    /// <Controls:EnhancedTreeView ItemsSource="{Binding Folders}"
+    ///                            SelectedElement="{Binding SelectedItem, Mode=TwoWay}"
+    ///                            AutoExpandSelected="True">
+    ///     <TreeView.ItemTemplate>
+    ///         <HierarchicalDataTemplate ItemsSource="{Binding Folders}">
+    ///             <TextBlock Text="{Binding Name}" />
+    ///         </HierarchicalDataTemplate>
+    ///     </TreeView.ItemTemplate>
+    /// </Controls:EnhancedTreeView>
     /// ]]>
     /// </code>
     /// </example>
     public class EnhancedTreeView : TreeView
     {
+        private readonly PropertyInfo _isSelectionChangeActiveProperty;
+        private bool _selfMultiSelect;
+        private TreeViewItem _lastSelectedItem;
+        private bool _selfSelectedElement;
+        private bool _selectionRequested;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DW.WPFToolkit.Controls.EnhancedTreeView" /> class.
         /// </summary>
@@ -62,16 +79,15 @@ namespace DW.WPFToolkit.Controls
             _isSelectionChangeActiveProperty = typeof(TreeView).GetProperty("IsSelectionChangeActive", BindingFlags.NonPublic | BindingFlags.Instance);
             SelectedTreeViewItems = new ObservableCollection<TreeViewItem>();
 
-            _isCodeSelection = true;
+            _selfMultiSelect = true;
 
-            PreviewMouseDown += (sender, e) => _isCodeSelection = false;
-            PreviewMouseUp += (sender, e) => _isCodeSelection = true;
-            PreviewKeyDown += (sender, e) => _isCodeSelection = false;
-            PreviewKeyUp += (sender, e) => _isCodeSelection = true;
+            PreviewMouseDown += (sender, e) => _selfMultiSelect = false;
+            PreviewMouseUp += (sender, e) => _selfMultiSelect = true;
+            PreviewKeyDown += (sender, e) => _selfMultiSelect = false;
+            PreviewKeyUp += (sender, e) => _selfMultiSelect = true;
+
+            AddHandler(EnhancedTreeViewItem.ContainerGeneratedEvent, new RoutedEventHandler(HandleContainerGenerated));
         }
-
-        private bool _isCodeSelection;
-        private TreeViewItem _lastSelectedItem;
 
         /// <summary>
         /// Generates a new child item container to hold in the <see cref="DW.WPFToolkit.Controls.EnhancedTreeView" />.
@@ -79,7 +95,9 @@ namespace DW.WPFToolkit.Controls
         /// <returns>The generated child item container</returns>
         protected override DependencyObject GetContainerForItemOverride()
         {
-            return new EnhancedTreeViewItem();
+            var container = new EnhancedTreeViewItem();
+            container.RaiseContainerGenerated();
+            return container;
         }
 
         /// <summary>
@@ -124,7 +142,7 @@ namespace DW.WPFToolkit.Controls
             var newSelected = GetSelectedContainer();
             if (newSelected != null)
             {
-                if (_isCodeSelection)
+                if (_selfMultiSelect)
                     HandleCodeSelection(newSelected);
                 else if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
                     HandleControlKeySelection(newSelected);
@@ -242,8 +260,6 @@ namespace DW.WPFToolkit.Controls
             return (TreeViewItem)typeof(TreeView).GetField("_selectedContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue((TreeView)this);
         }
 
-        private PropertyInfo _isSelectionChangeActiveProperty;
-        
         private void DisableSelectionChangedEvent()
         {
             _isSelectionChangeActiveProperty.SetValue((TreeView)this, true, null);
@@ -259,14 +275,7 @@ namespace DW.WPFToolkit.Controls
         /// </summary>
         public ObservableCollection<object> SelectedItems
         {
-            get
-            {
-                var items = new ObservableCollection<object>();
-                var selectedItems = SelectedTreeViewItems.Select(i => i.Header);
-                foreach (var item in selectedItems)
-                    items.Add(item);
-                return items;
-            }
+            get { return new ObservableCollection<object>(SelectedTreeViewItems.Select(i => i.DataContext)); }
         }
 
         /// <summary>
@@ -277,6 +286,7 @@ namespace DW.WPFToolkit.Controls
         /// <summary>
         /// Gets or set a value which indicates how items can be selected in the tree view.
         /// </summary>
+        /// <remarks>The default value is SelectionMode.Extended</remarks>
         [DefaultValue(SelectionMode.Extended)]
         public SelectionMode SelectionMode
         {
@@ -293,6 +303,7 @@ namespace DW.WPFToolkit.Controls
         /// <summary>
         /// Gets or sets a value which indicates of the child tree view items should be stretched over the whole control width or not.
         /// </summary>
+        /// <remarks>The default value is false.</remarks>
         [DefaultValue(false)]
         public bool ItemsContentStretching
         {
@@ -309,7 +320,6 @@ namespace DW.WPFToolkit.Controls
         /// <summary>
         /// Gets or sets the command to be executed if a item got selected.
         /// </summary>
-        [DefaultValue(null)]
         public ICommand SelectedItemChangedCommand
         {
             get { return (ICommand)GetValue(SelectedItemChangedCommandProperty); }
@@ -322,10 +332,142 @@ namespace DW.WPFToolkit.Controls
         public static readonly DependencyProperty SelectedItemChangedCommandProperty =
             DependencyProperty.Register("SelectedItemChangedCommand", typeof(ICommand), typeof(EnhancedTreeView), new PropertyMetadata(null));
 
+        /// <summary>
+        /// Gets or sets the selected item in the tree.
+        /// </summary>
+        /// <remarks>The parent elements will not be expanded automatically. Check <see cref="DW.WPFToolkit.Controls.EnhancedTreeView.AutoExpandSelected" /> for try to expand them.</remarks>
+        public object SelectedElement
+        {
+            get { return (object)GetValue(SelectedElementProperty); }
+            set { SetValue(SelectedElementProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.EnhancedTreeView.SelectedElement" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty SelectedElementProperty =
+            DependencyProperty.Register("SelectedElement", typeof(object), typeof(EnhancedTreeView), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedElementChanged));
+
+        /// <summary>
+        /// Gets or sets a value which indicates if the TreeViewItems gets expanded automatically to the selected item when using <see cref="DW.WPFToolkit.Controls.EnhancedTreeView.SelectedElement" />.
+        /// </summary>
+        /// <remarks>This works only if the items are not virtualized or were visible already.<br />
+        /// In ItemsPanelTemplate usually a VirtualizingStackPanel is used, then the TreeViewItems gets created only after expanding the parent.<br />
+        /// With overriding the ItemsPanel with a normal StackPanel all container should get created directly, but then the performance will suffer depending an the amount of items.<br />
+        /// <br />
+        /// The default value is false.</remarks>
+        [DefaultValue(false)]
+        public bool AutoExpandSelected
+        {
+            get { return (bool)GetValue(AutoExpandSelectedProperty); }
+            set { SetValue(AutoExpandSelectedProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="DW.WPFToolkit.Controls.EnhancedTreeView.AutoExpandSelected" /> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty AutoExpandSelectedProperty =
+            DependencyProperty.Register("AutoExpandSelected", typeof(bool), typeof(EnhancedTreeView), new PropertyMetadata(false));
+
         private void OnSelectedItemChangedCommand(object newValue)
         {
             if (SelectedItemChangedCommand != null && SelectedItemChangedCommand.CanExecute(newValue))
                 SelectedItemChangedCommand.Execute(newValue);
+
+            _selfSelectedElement = true;
+            SelectedElement = newValue;
+            _selfSelectedElement = false;
+        }
+
+        
+
+        private static void OnSelectedElementChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (EnhancedTreeView)d;
+            if (control._selfSelectedElement)
+                return;
+
+            control.TrySelectItem(e.OldValue, e.NewValue);
+        }
+
+        private void TrySelectItem(object oldSelectedElement, object newSelectedElement)
+        {
+            _selfSelectedElement = true;
+
+            if (oldSelectedElement != null)
+                Deselect(oldSelectedElement);
+
+            if (newSelectedElement == null)
+                return;
+
+            var container = GetContainerFromItem(this, newSelectedElement);
+            if (container != null)
+                Select(container);
+            else
+                _selectionRequested = true;
+
+            _selfSelectedElement = false;
+        }
+
+        private static TreeViewItem GetContainerFromItem(ItemsControl parent, object item)
+        {
+            var actualContainer = parent.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+            if (actualContainer != null)
+                return actualContainer;
+
+            foreach (var treeViewItem in parent.Items)
+            {
+                var container = parent.ItemContainerGenerator.ContainerFromItem(treeViewItem) as TreeViewItem;
+                if (container == null)
+                    continue;
+
+                var foundContainer = GetContainerFromItem(container, item);
+                if (foundContainer != null)
+                    return foundContainer;
+            }
+            return null;
+        }
+
+        private void HandleContainerGenerated(object sender, RoutedEventArgs e)
+        {
+            if (!_selectionRequested)
+                return;
+            var container = GetContainerFromItem(this, SelectedElement);
+            if (container != null)
+            {
+                _selectionRequested = false;
+                Select(container);
+            }
+        }
+
+        private void Deselect(object oldSelectedElement)
+        {
+            var container = GetContainerFromItem(this, oldSelectedElement);
+            if (container != null)
+            {
+                container.IsSelected = false;
+                if (Equals(container, _lastSelectedItem))
+                    _lastSelectedItem = null;
+                SelectedTreeViewItems.Remove(container);
+            }
+        }
+
+        private void Select(TreeViewItem element)
+        {
+            element.IsSelected = true;
+            _lastSelectedItem = element;
+            SelectedTreeViewItems.Add(element);
+            element.BringIntoView();
+
+            if (AutoExpandSelected)
+                TryExpandTree(element);
+        }
+
+        private void TryExpandTree(TreeViewItem element)
+        {
+            var parents = VisualTreeAssist.GetParentsUntil<TreeViewItem, TreeView>(element).ToList();
+            parents.ForEach(p => p.IsExpanded = true);
+            element.BringIntoView();
         }
     }
 }

@@ -31,7 +31,7 @@ using System.Windows.Data;
 namespace DW.WPFToolkit.Controls
 {
     /// <summary>
-    /// Enhances the <see cref="System.Windows.Controls.TreeViewItem" /> to be able to let is stretch over the whole width of the parent control.
+    /// Enhances the <see cref="System.Windows.Controls.TreeViewItem" /> to be used in the <see cref="DW.WPFToolkit.Controls.EnhancedTreeView" />.
     /// </summary>
     public class EnhancedTreeViewItem : TreeViewItem
     {
@@ -51,9 +51,11 @@ namespace DW.WPFToolkit.Controls
         /// Generates a new child item container to hold in the <see cref="DW.WPFToolkit.Controls.EnhancedTreeViewItem" />.
         /// </summary>
         /// <returns>The generated child item container</returns>
-        protected override System.Windows.DependencyObject GetContainerForItemOverride()
+        protected override DependencyObject GetContainerForItemOverride()
         {
-            return new EnhancedTreeViewItem();
+            var generated = new EnhancedTreeViewItem();
+            RaiseContainerGenerated();
+            return generated;
         }
 
         /// <summary>
@@ -81,6 +83,15 @@ namespace DW.WPFToolkit.Controls
         public static readonly DependencyProperty ContentStretchingProperty =
             DependencyProperty.Register("ContentStretching", typeof(bool), typeof(EnhancedTreeViewItem), new UIPropertyMetadata(OnContentStretchingChanged));
 
+        internal static readonly RoutedEvent ContainerGeneratedEvent =
+            EventManager.RegisterRoutedEvent("ContainerGenerated", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EnhancedTreeViewItem));
+
+        internal void RaiseContainerGenerated()
+        {
+            var newEventArgs = new RoutedEventArgs(ContainerGeneratedEvent);
+            RaiseEvent(newEventArgs);
+        }
+
         private static void OnContentStretchingChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             var value = (bool)e.NewValue;
@@ -90,12 +101,14 @@ namespace DW.WPFToolkit.Controls
                 if (control.IsLoaded)
                     control.AdjustChildren();
                 else
-                    control.Loaded += new RoutedEventHandler(control.StretchingTreeViewItem_Loaded);
+                    control.Loaded += control.StretchingTreeViewItem_Loaded;
             }
         }
 
         private void StretchingTreeViewItem_Loaded(object sender, RoutedEventArgs e)
         {
+            Loaded -= StretchingTreeViewItem_Loaded;
+
             AdjustChildren();
         }
 

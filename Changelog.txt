@@ -3,6 +3,7 @@
 ==============================
 Release 5.6.0.0
 ==============================
+2015-11-18    EnhancedTreeView: Add bindable SelectedElement
 2015-11-10    NumberBox: Rename Currency by Unit
               NumberBox: Bind the visibility of the unity by its set value
               NumberBox: Number written in the XAMl directly were not taken for all types except BigInteger
