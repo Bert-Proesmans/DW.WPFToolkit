@@ -24,6 +24,7 @@ THE SOFTWARE
 */
 #endregion License
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -95,9 +96,7 @@ namespace DW.WPFToolkit.Controls
         /// <returns>The generated child item container</returns>
         protected override DependencyObject GetContainerForItemOverride()
         {
-            var container = new EnhancedTreeViewItem();
-            container.RaiseContainerGenerated();
-            return container;
+            return new EnhancedTreeViewItem();
         }
 
         /// <summary>
@@ -374,12 +373,13 @@ namespace DW.WPFToolkit.Controls
             if (SelectedItemChangedCommand != null && SelectedItemChangedCommand.CanExecute(newValue))
                 SelectedItemChangedCommand.Execute(newValue);
 
+            if (_selfSelectedElement)
+                return;
+
             _selfSelectedElement = true;
             SelectedElement = newValue;
             _selfSelectedElement = false;
         }
-
-        
 
         private static void OnSelectedElementChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -432,12 +432,9 @@ namespace DW.WPFToolkit.Controls
         {
             if (!_selectionRequested)
                 return;
-            var container = GetContainerFromItem(this, SelectedElement);
-            if (container != null)
-            {
-                _selectionRequested = false;
-                Select(container);
-            }
+
+            _selectionRequested = false;
+            TrySelectItem(null, SelectedElement);
         }
 
         private void Deselect(object oldSelectedElement)

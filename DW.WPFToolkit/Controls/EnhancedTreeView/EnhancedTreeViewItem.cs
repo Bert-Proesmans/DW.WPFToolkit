@@ -45,6 +45,9 @@ namespace DW.WPFToolkit.Controls
             binding.RelativeSource.Mode = RelativeSourceMode.FindAncestor;
             binding.RelativeSource.AncestorType = typeof(EnhancedTreeView);
             SetBinding(ContentStretchingProperty, binding);
+
+            DataContextChanged += (sender, args) => RaiseContainerGenerated();
+            Loaded += (sender, args) => RaiseContainerGenerated();
         }
 
         /// <summary>
@@ -53,9 +56,7 @@ namespace DW.WPFToolkit.Controls
         /// <returns>The generated child item container</returns>
         protected override DependencyObject GetContainerForItemOverride()
         {
-            var generated = new EnhancedTreeViewItem();
-            RaiseContainerGenerated();
-            return generated;
+            return new EnhancedTreeViewItem();
         }
 
         /// <summary>
