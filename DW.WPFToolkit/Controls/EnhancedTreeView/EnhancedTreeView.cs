@@ -88,6 +88,12 @@ namespace DW.WPFToolkit.Controls
             PreviewKeyUp += (sender, e) => _selfMultiSelect = true;
 
             AddHandler(EnhancedTreeViewItem.ContainerGeneratedEvent, new RoutedEventHandler(HandleContainerGenerated));
+
+            Loaded += (sender, args) =>
+            {
+                if (SelectedElement != null)
+                    TrySelectItem(null, SelectedElement);
+            };
         }
 
         /// <summary>
@@ -451,6 +457,9 @@ namespace DW.WPFToolkit.Controls
 
         private void Select(TreeViewItem element)
         {
+            if (element.IsSelected)
+                return;
+
             element.IsSelected = true;
             _lastSelectedItem = element;
             SelectedTreeViewItems.Add(element);

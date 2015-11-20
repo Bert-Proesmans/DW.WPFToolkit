@@ -3,6 +3,9 @@
 ==============================
 Release 5.6.0.0
 ==============================
+2015-11-20    EnhancedTreeView: Move raising of the ContainerGenerated to another position to cover derivates of the TreeView[Item] elements
+              EnhancedTreeView: Fixed wrong selection of the container when created lazy
+              EnhancedTreeView: Handle selection when its done already when loaded and prevent its duplicate adding to the multiselect list
 2015-11-18    EnhancedTreeView: Add bindable SelectedElement
 2015-11-10    NumberBox: Rename Currency by Unit
               NumberBox: Bind the visibility of the unity by its set value
