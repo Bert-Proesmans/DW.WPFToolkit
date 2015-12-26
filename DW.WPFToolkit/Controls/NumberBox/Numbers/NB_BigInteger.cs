@@ -56,6 +56,11 @@ namespace DW.WPFToolkit.Controls.Numbers
             get { return _minimum == null || _minimum.Value < 0; }
         }
 
+        public override bool NumberIsBelowMinimum
+        {
+            get { return _current < _minimum; }
+        }
+
         protected override BigInteger? GetMinValue()
         {
             return null;
@@ -85,8 +90,6 @@ namespace DW.WPFToolkit.Controls.Numbers
         {
             if (parsedNumber == null)
                 return true;
-            if (_minimum != null && parsedNumber < _minimum)
-                return false;
             if (_maximum != null && parsedNumber > _maximum)
                 return false;
             return true;

@@ -834,6 +834,8 @@ namespace DW.WPFToolkit.Controls
 
         private void HandleTextBoxLostFocus(object sender, RoutedEventArgs e)
         {
+            HandleMinimumValue();
+
             var behavior = LostFocusBehavior;
             if (behavior == null)
                 return;
@@ -841,6 +843,16 @@ namespace DW.WPFToolkit.Controls
             HandleNullValue(behavior);
             HandleTrimming(behavior);
             HandleFormatting(behavior);
+        }
+
+        private void HandleMinimumValue()
+        {
+            if (_number.NumberIsBelowMinimum)
+            {
+                _number.ToMinimum();
+                TakeNumber();
+                _textBox.Text = _number.ToString();
+            }
         }
 
         private void HandleNullValue(LostFocusBehavior behavior)

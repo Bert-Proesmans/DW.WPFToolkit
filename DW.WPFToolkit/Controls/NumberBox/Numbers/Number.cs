@@ -158,6 +158,7 @@ namespace DW.WPFToolkit.Controls.Numbers
         public abstract bool CanIncrease { get; }
         public abstract bool CanDecrease { get; }
         public abstract bool AcceptNegative { get; }
+        public abstract bool NumberIsBelowMinimum { get; }
         protected abstract T GetMinValue();
         protected abstract T GetMaxValue();
         protected abstract T GetDefaultStep();

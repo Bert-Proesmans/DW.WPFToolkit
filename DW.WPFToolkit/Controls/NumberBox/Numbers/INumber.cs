@@ -47,5 +47,6 @@ namespace DW.WPFToolkit.Controls.Numbers
         bool CanIncrease { get; }
         bool CanDecrease { get; }
         bool AcceptNegative { get; }
+        bool NumberIsBelowMinimum { get; }
     }
 }

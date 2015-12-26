@@ -45,6 +45,11 @@ namespace DW.WPFToolkit.Controls.Numbers
             get { return false; }
         }
 
+        public override bool NumberIsBelowMinimum
+        {
+            get { return _current < _minimum; }
+        }
+
         protected override uint? GetMinValue()
         {
             return uint.MinValue;
@@ -74,7 +79,7 @@ namespace DW.WPFToolkit.Controls.Numbers
         {
             if (parsedNumber == null)
                 return true;
-            return parsedNumber >= _minimum && parsedNumber <= _maximum;
+            return parsedNumber <= _maximum;
         }
 
         protected override bool TryParse(string numberString, out uint? parsed)
