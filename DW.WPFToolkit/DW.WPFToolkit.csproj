@@ -224,6 +224,8 @@
     <Compile Include="Interactivity\WindowTitleBarBehavior\WindowTitleBarBehavior.cs" />
     <Compile Include="Properties\CommonMeta.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\IWPFMessageBoxService.cs" />
+    <Compile Include="Services\WPFMessageBoxService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Controls\DockingPane\Styles.xaml">

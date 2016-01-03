@@ -3,6 +3,7 @@
 ==============================
 Release 5.6.0.0
 ==============================
+2016-01-03    WPFMessageBoxService: Add WPFMessageBoxService to display the WPFMessageBox
 2015-12-27    FocusBehavior: Execute command when element got or lost the focus
               FocusBehavior: Execute command when ite tabbed out or into the application
 2015-12-26    NumberBox: If the minimum value is above 0, the minimum value will be parsed first on lost focus
