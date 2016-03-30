@@ -24,7 +24,6 @@ THE SOFTWARE
 */
 #endregion License
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -149,9 +148,9 @@ namespace DW.WPFToolkit.Controls
             {
                 if (_selfMultiSelect)
                     HandleCodeSelection(newSelected);
-                else if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || SelectionMode == SelectionMode.Multiple)
                     HandleControlKeySelection(newSelected);
-                else if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
                     HandleShiftKeySelection(newSelected);
                 else
                     HandleSingleSelection(newSelected);

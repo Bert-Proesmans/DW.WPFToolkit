@@ -1,6 +1,12 @@
 
 
 ==============================
+Release 5.8.0.0
+==============================
+2016-03-30    EnhancedTreeView: Add support of the SelectionMode.Multiple (Thanks to Tobias Heilmannseder!)
+
+
+==============================
 Release 5.6.0.0
 ==============================
 2016-01-03    WPFMessageBoxService: Add WPFMessageBoxService to display the WPFMessageBox
