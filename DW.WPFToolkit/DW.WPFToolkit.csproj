@@ -5,6 +5,19 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <UseWPF>true</UseWPF>
         <UseWindowsForms>true</UseWindowsForms>
+        <Version>6.0.0.0</Version>
+        <Authors>David Wendland</Authors>
+        <Company>my-libraries</Company>
+        <Copyright>David Wendland</Copyright>
+        <PackageLicenseFile>README.txt</PackageLicenseFile>
+        <PackageProjectUrl>http://www.my-libraries.com</PackageProjectUrl>
     </PropertyGroup>
+
+    <ItemGroup>
+      <None Include="..\README.txt">
+        <Pack>True</Pack>
+        <PackagePath></PackagePath>
+      </None>
+    </ItemGroup>
 
 </Project>
