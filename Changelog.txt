@@ -1,6 +1,12 @@
 
 
 ==============================
+Release 5.9.0.0
+==============================
+2020-05-26    Build library with .Net Framework 4.8
+
+
+==============================
 Release 5.8.0.0
 ==============================
 2016-03-30    EnhancedTreeView: Add support of the SelectionMode.Multiple (Thanks to Tobias Heilmannseder!)
