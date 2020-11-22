@@ -1,0 +1,28 @@
+name: Build-Nuget-Package
+
+on:
+  push:
+    branches: [ releases ]
+
+jobs:
+  # Set the job key. The key is displayed as the job name
+  # when a job name is not provided
+  package:
+    name: Package code
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: 
+        uses: actions/setup-dotnet@v1
+        with:
+          source-url: https://nuget.pkg.github.com/Bert-Proesmans/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Build Project
+        run: dotnet build "DW.WPFToolkit/DW.WPFToolkit.csproj" -c Release
+      - name: Build package
+        run: dotnet pack "DW.WPFToolkit/DW.WPFToolkit.csproj" -c Release
+      - name: Publish package
+        run: Get-ChildItem -Filter "DW.WPFToolkit/bin/Release/*.nupkg" -File | %{& dotnet nuget push $_.FullName -k ${{secrets.GITHUB_TOKEN}}}

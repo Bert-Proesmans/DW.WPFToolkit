@@ -6,6 +6,8 @@
     <UseWPF>true</UseWPF>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <RepositoryUrl>https://github.com/Bert-Proesmans/DW.WPFToolkit</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net48'">
@@ -20,5 +22,5 @@
     <Reference Include="PresentationFramework.Aero" />
   </ItemGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)..\build\PresentationFramework.build.targets"/>
+  <Import Project="$(MSBuildThisFileDirectory)..\build\PresentationFramework.build.targets" />
 </Project>
